@@ -23,6 +23,7 @@ body{
   margin:0; padding:16px 14px 130px; min-height:100vh;
   display:flex; justify-content:center; overflow-x:hidden; position:relative;
 }
+/* живой фон: медленно плывущие пятна */
 body::before, body::after{
   content:""; position:fixed; border-radius:50%; z-index:0; pointer-events:none;
   filter:blur(70px); opacity:.55;
@@ -43,6 +44,7 @@ body::after{
 .bento{width:100%;max-width:560px;display:grid;grid-template-columns:repeat(6,1fr);gap:12px;align-content:start;position:relative;z-index:1}
 @media(max-width:480px){.bento{grid-template-columns:repeat(2,1fr)}}
 
+/* ---------- плитки ---------- */
 .tile{
   background:var(--card); border-radius:var(--r); padding:18px;
   box-shadow:var(--shadow), inset 0 1px 0 rgba(255,255,255,.9);
@@ -56,6 +58,7 @@ body::after{
 .c6{grid-column:span 6}.c3{grid-column:span 3}
 @media(max-width:480px){.c6,.c3{grid-column:span 2}}
 
+/* ---------- шапка: тёмное стекло с градиентом ---------- */
 .tile.hero{
   background:linear-gradient(135deg,#7e1b1b 0%,#3a1416 60%,#23262d 100%);
   border:none; color:#fff; position:relative; overflow:hidden;
@@ -73,6 +76,7 @@ body::after{
   background:#fff; display:flex;align-items:center;justify-content:center;
   position:relative;
 }
+/* вращающееся световое кольцо вокруг логотипа */
 .logo::after{
   content:""; position:absolute; inset:-4px; border-radius:50%; z-index:-1;
   background:conic-gradient(from 0deg,transparent 0 40%,rgba(255,120,120,.9) 50%,transparent 60% 100%);
@@ -100,6 +104,7 @@ body::after{
   100%{box-shadow:0 0 0 0 rgba(74,222,128,0)}
 }
 
+/* ---------- статус + часы ---------- */
 .tile.stat{display:flex;flex-direction:column;justify-content:space-between;gap:8px;min-height:122px}
 .dot-row{display:flex;align-items:center;gap:8px}
 .dot{width:9px;height:9px;border-radius:50%;background:var(--muted);transition:.3s}
@@ -129,6 +134,7 @@ body::after{
 #clock{font-size:25px;font-weight:800;letter-spacing:-.5px;font-variant-numeric:tabular-nums}
 #clock small{font-size:11px;color:var(--muted);font-weight:700;margin-left:6px}
 
+/* ---------- профиль ---------- */
 .tile.profile{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .ava{
   width:46px;height:46px;border-radius:50%;flex-shrink:0;overflow:hidden;
@@ -160,6 +166,7 @@ body::after{
 .btn-ink:hover{transform:translateY(-1px);background:var(--deep-2)}
 .btn-ink:active{transform:scale(.95)}
 
+/* ---------- чат ---------- */
 .tile.chat{padding:10px;height:min(60vh,520px);display:flex;flex-direction:column}
 #chat{
   flex:1;overflow-y:auto;padding:10px 8px 6px;display:flex;flex-direction:column;gap:14px;
@@ -169,6 +176,7 @@ body::after{
 .msg{max-width:84%;font-size:14px;line-height:1.55;white-space:pre-wrap;word-break:break-word;
   overflow-wrap:anywhere;animation:msgIn .3s cubic-bezier(.2,.9,.3,1.15)}
 @keyframes msgIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+/* строки с аватаром: помощница слева */
 .msg-row{display:flex;gap:8px;align-items:flex-end}
 .msg-row.user-row{justify-content:flex-end}
 .msg-ava{
@@ -192,6 +200,7 @@ body::after{
 .msg.typing i:nth-child(3){animation-delay:.28s}
 @keyframes bnc{0%,60%,100%{transform:translateY(0);opacity:.35}30%{transform:translateY(-6px);opacity:1}}
 
+/* ---------- нижняя панель: стекло со свечением ---------- */
 .dock{
   position:fixed;bottom:16px;left:50%;transform:translateX(-50%);
   width:calc(100% - 28px);max-width:532px;z-index:50;
@@ -218,6 +227,7 @@ body::after{
 .orb-ghost{background:var(--panel);border:1.5px solid var(--border)!important;color:var(--ink)}
 .orb-ghost:hover{border-color:var(--accent)!important;transform:scale(1.06)}
 .orb-ghost.listening{background:var(--accent);border-color:var(--accent)!important;color:#fff}
+/* волны вокруг микрофона, когда слушает */
 .orb-ghost.listening::before,.orb-ghost.listening::after{
   content:"";position:absolute;inset:0;border-radius:50%;
   border:2px solid rgba(217,43,43,.5);animation:micWave 1.5s ease-out infinite;
@@ -228,6 +238,7 @@ body::after{
 .orb-go:hover{transform:scale(1.06);filter:brightness(1.05)}
 .orb-go:active{transform:scale(.9)}
 
+/* ---------- строка статуса над доком ---------- */
 #status-strip{
   position:fixed;bottom:90px;left:50%;transform:translateX(-50%);
   font-size:12px;font-weight:700;color:var(--muted);background:rgba(255,255,255,.92);
@@ -244,6 +255,7 @@ body::after{
 #status-strip .eq span:nth-child(3){height:8px;animation-delay:.3s}
 @keyframes eqj{0%,100%{transform:scaleY(.4)}50%{transform:scaleY(1)}}
 
+/* ---------- тосты ---------- */
 #toast-container{position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:9999;pointer-events:none;width:max-content;max-width:calc(100vw - 24px)}
 .toast{
   background:var(--deep);color:#fff;padding:12px 18px;border-radius:16px;
@@ -317,6 +329,8 @@ body::after{
 const API_URL = 'https://script.google.com/macros/s/AKfycbxfhv4T3olgBLWKv8MKqRUxpxgeK0gMeJjfLZJnaapyPeF-kFoQkvBEO6i42yjo8xK3/exec';
 
 // ---------- АВАТАРКА ----------
+// Загрузите логотип на Google Диск («все, у кого есть ссылка»),
+// скопируйте из ссылки идентификатор файла и вставьте сюда:
 const AVATAR_URL = ''; // пример: 'https://drive.google.com/uc?export=view&id=1AbCdEfGh...'
 
 (function applyAvatar() {
@@ -383,19 +397,6 @@ function setLivePulse(color) {
   if (p) p.style.background = color;
 }
 
-// ---------- ДИАГНОСТИКА В ЧАТ (после отладки строки с 🔧 можно удалить) ----------
-function dbg(text) {
-  try {
-    const box = document.getElementById('chat');
-    const d = document.createElement('div');
-    d.className = 'msg bot';
-    d.style.cssText = 'font-size:11px;opacity:.55;background:transparent;border:none;padding:2px 15px;';
-    d.textContent = '🔧 ' + text;
-    box.appendChild(d);
-    box.scrollTop = box.scrollHeight;
-  } catch (e) {}
-}
-
 // ---------- ЧИСЛА СЛОВАМИ ----------
 const NUM_WORDS = {
   'ноль':'0','один':'1','одна':'1','одно':'1','два':'2','две':'2','три':'3','четыре':'4','пять':'5',
@@ -448,8 +449,8 @@ function normalize(q) {
     .trim();
   s = s.replace(/(^|[^а-яa-z\d_])([а-яa-z]{1,4})\s+(\d{2,6})(?![\dа-яa-z])/g,
     (m, p1, p2, p3) => /^(плюс|минус|умнож|раздели|подели|на|х)$/.test(p2) ? m : p1 + p2 + p3);
-  // Математика: синонимы склада не подставляем, иначе «минус» станет «списал»
-  const isMath = /(?:сколько\s+будет|сколько\s+(?:выйдет|получится|равно)|чему\s+равно|посчита[а-яё]*|вычисл[а-яё]*|реши\b|дважды|трижды|корень|процент|умнож|раздели|подели)/.test(s) || /\d\s*[+\-*/×]\s*\d/.test(s);
+    // Математика: синонимы склада не подставляем, иначе «минус» станет «списал»
+  const isMath = /(?:сколько\s+будет|сколько\s+(?:выйдет|получится|равно)|чему\s+равно|посчита[а-яё]*|вычисл[а-яё]*|реши\b|дважды|трижды|корень|процент|умнож|раздели|подели)/.test(s) ||/\d\s*[+\-*/×]\s*\d/.test(s);
   if (!isMath) {
     for (const { re, to } of SYNONYMS) { if (re.test(s)) { s = s.replace(re, ' ' + to + ' '); break; } }
   }
@@ -483,6 +484,8 @@ async function api(params) {
 }
 
 // ---------- ЧАТ ----------
+// Каждое сообщение — в строке с аватаром: помощница с логотипом слева,
+// собеседник справа без аватара, как в живом чате.
 function addMsg(text, who) {
   const box = document.getElementById('chat');
   const row = document.createElement('div');
@@ -675,24 +678,8 @@ function toggleAutoMode() {
   }
 }
 
-// ---------- РАЗБЛОКИРОВКА ЗВУКА ЖЕСТОМ ----------
-let audioUnlocked = false;
-function unlockAudio() {
-  if (audioUnlocked) return;
-  audioUnlocked = true;
-  try { if (window.speechSynthesis) speechSynthesis.speak(new SpeechSynthesisUtterance(' ')); } catch (e) {}
-  try {
-    // 1 кадр тишины — снимает блок автоплея
-    new Audio('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABGY3M2AAAf/gAA/gAA')
-      .play().catch(() => {});
-  } catch (e) {}
-  dbg('Звук разблокирован жестом');
-}
-document.addEventListener('click', unlockAudio, { once: true });
-
 // ---------- МИКРОФОН ----------
 async function onMic() {
-  unlockAudio();
   if (listening) { try { rec.stop(); } catch (e) {} return; }
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SR) { showToast('Нужен Chrome или Яндекс.Браузер', 'error'); return; }
@@ -701,18 +688,14 @@ async function onMic() {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     stream.getTracks().forEach(tr => tr.stop());
     micGranted = true;
-    dbg('Разрешение на микрофон получено');
     startRecognition();
   } catch (e) {
     if (e.name === 'NotAllowedError' || e.name === 'PermissionDeniedError') {
       showToast('Микрофон запрещён: значок 🎤 слева от адреса → «Разрешить»', 'error');
-      dbg('getUserMedia: ' + e.name);
     } else if (e.name === 'NotFoundError') {
       showToast('Микрофон не найден. Проверьте подключение', 'error');
-      dbg('getUserMedia: ' + e.name);
     } else {
       showToast('Микрофон недоступен: ' + e.name, 'error');
-      dbg('getUserMedia: ' + e.name);
     }
     if (autoMode) { autoMode = false; renderAuto(); }
   }
@@ -730,12 +713,12 @@ function startRecognition() {
   rec = new SR();
   rec.lang = 'ru-RU';
   rec.interimResults = true;
-  rec.continuous = false;
   rec.maxAlternatives = 1;
 
-  rec.onstart = function () { dbg('Микрофон слушает'); };
-  rec.onspeechstart = function () { dbg('Слышу звук'); };
-  rec.onnomatch = function () { dbg('Речь не распознал — говорите ближе'); };
+  listening = true;
+  setMic(true);
+  setDot('busy', 'Микрофон', 'Слушаю… говорите');
+  setStatus('Слушаю… говорите', true);
 
   rec.onresult = function (e) {
     let interim = '', final = '';
@@ -755,13 +738,10 @@ function startRecognition() {
   rec.onerror = function (e) {
     listening = false; setMic(false);
     setDot('off', 'Система', 'Готова слушать');
-    dbg('Ошибка распознавания: ' + e.error);
     const map = {
       'not-allowed': 'Доступ к микрофону запрещён браузером',
-      'service-not-allowed': 'Распознавание заблокировано в этом окне — откройте веб-приложение в отдельной вкладке',
       'network': 'Нет связи с сервером распознавания — проверьте интернет',
-      'audio-capture': 'Микрофон не найден',
-      'language-not-supported': 'ru-RU не поддерживается этим браузером'
+      'audio-capture': 'Микрофон не найден'
     };
     if (e.error !== 'aborted' && e.error !== 'no-speech') {
       showToast(map[e.error] || ('Ошибка: ' + e.error), 'error');
@@ -776,11 +756,7 @@ function startRecognition() {
   };
 
   try { rec.start(); }
-  catch (e) {
-    listening = false; setMic(false);
-    dbg('rec.start() упал: ' + (e && e.message || e));
-    showToast('Не удалось запустить микрофон: ' + (e && e.message || e), 'error');
-  }
+  catch (e) { listening = false; setMic(false); }
 }
 
 function setMic(on) {
@@ -792,23 +768,8 @@ function setMic(on) {
 // ============ ГОЛОС: SpeechKit + женский запасной TTS ============
 let currentAudio = null;
 let voiceF = null;
-let ttsWatchdog = null;
-
-// Страховка: если озвучка зависла (браузер заблокировал, но не сказал об этом),
-// через 10 секунд снимаем флаг и возвращаем микрофон в строй.
-function armTtsWatchdog(label) {
-  clearTimeout(ttsWatchdog);
-  ttsWatchdog = setTimeout(() => {
-    if (botSpeaking) {
-      botSpeaking = false;
-      dbg('Озвучка не завершилась (' + label + ') — снова слушаю');
-      if (autoMode && !listening) scheduleRestart();
-    }
-  }, 10000);
-}
 
 function afterSpeak() {
-  clearTimeout(ttsWatchdog);
   botSpeaking = false;
   if (autoMode && !listening) scheduleRestart();
 }
@@ -844,7 +805,6 @@ function speakFallback(text) {
     if (voiceF) u.voice = voiceF;
     u.rate = 1.05; u.pitch = 1.05;
     u.onend = afterSpeak; u.onerror = afterSpeak;
-    armTtsWatchdog('fallback');
     speechSynthesis.speak(u);
   } catch (e) { afterSpeak(); }
 }
@@ -860,9 +820,8 @@ async function fetchTts(text) {
 
 function speak(text) {
   try {
-    if (listening) { try { rec.stop(); } catch (e) {} }
+    if (listening) { botSpeaking = true; try { rec.stop(); } catch (e) {} }
     botSpeaking = true;
-    armTtsWatchdog('audio');
 
     let clean = String(text).trim().replace(/\n+/g, '. ');
     if (clean.length > 4500) clean = clean.slice(0, 4500);
@@ -894,7 +853,7 @@ function speak(text) {
   } catch (e) { afterSpeak(); }
 }
 
-// ---------- ПРИВЕТСТВИЕ ----------
+// ---------- ПРИВЕТСТВИЕ: как будто здоровается живой человек ----------
 const WELCOME = [
   'Я тут, слушаю. Скажите «склад» и что нужно — например, «склад, остатки».',
   'Чем займёмся: остатки, приход, отгрузка? Или просто спросите что-нибудь.',
@@ -912,3 +871,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+Вот код
