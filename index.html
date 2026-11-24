@@ -346,10 +346,26 @@ const AVATAR_URL = ''; // пример: 'https://drive.google.com/uc?export=view
 })();
 
 // ---------- ПАМЯТЬ О ПОЧТЕ ----------
+
 const LS_EMAIL = 'tsk_sklad_email';
-function saveEmail(e)   { try { localStorage.setItem(LS_EMAIL, e); } catch (err) {} }
-function loadEmail()    { try { return localStorage.getItem(LS_EMAIL) || ''; } catch (e) { return ''; } }
-function forgetEmail()  { try { localStorage.removeItem(LS_EMAIL); } catch (e) {} }
+
+function saveEmail(e) {
+  try { localStorage.setItem(LS_EMAIL, e); } catch (err) {}
+  try { document.cookie = LS_EMAIL + '=' + encodeURIComponent(e) + ';max-age=31536000;path=/;SameSite=Lax'; } catch (err) {}
+}
+function loadEmail() {
+  try { var v = localStorage.getItem(LS_EMAIL); if (v) return v; } catch (e) {}
+  try {
+    var m = document.cookie.match(new RegExp('(?:^|;\\s*)' + LS_EMAIL + '=([^;]*)'));
+    if (m) return decodeURIComponent(m[1]);
+  } catch (e) {}
+  return '';
+}
+function forgetEmail() {
+  try { localStorage.removeItem(LS_EMAIL); } catch (e) {}
+  try { document.cookie = LS_EMAIL + '=;max-age=0;path=/'; } catch (e) {}
+}
+
 
 let user = { email: '', name: 'Гость', canWrite: false };
 let voiceState = {};
@@ -840,16 +856,20 @@ function speak(text) {
 // ---------- ПРИВЕТСТВИЕ: как будто здоровается живой человек ----------
 const WELCOME = [
   'Я тут, слушаю. Скажите «склад» и что нужно — например, «склад, остатки».',
-  'Здравствуйте! Чем займёмся: остатки, приход, отгрузка? Или просто спросите что-нибудь.',
+  'Чем займёмся: остатки, приход, отгрузка? Или просто спросите что-нибудь.',
   'Склад на связи. Говорите — я слушаю и всё записываю.',
   'Скажите код или «склад, остатки» — покажу, что есть.'
 ];
 document.addEventListener('DOMContentLoaded', () => {
   renderAuto();
-  const h = new Date().getHours();
-  let greet = h < 6 ? 'Доброй ночи. ' : h < 12 ? 'Доброе утро. ' : h < 18 ? 'Добрый день. ' : 'Добрый вечер. ';
+  const saved = loadEmail();
   autoLogin().then(loggedIn => {
-    if (!loggedIn) addMsg(greet + WELCOME[Math.floor(Math.random() * WELCOME.length)], 'bot');
+    if (!loggedIn) {
+      const h = new Date().getHours();
+      let greet = h < 6 ? 'Доброй ночи. ' : h < 12 ? 'Доброе утро. ' : h < 18 ? 'Добрый день. ' : 'Добрый вечер. ';
+      addMsg(greet + WELCOME[Math.floor(Math.random() * WELCOME.length)], 'bot');
+      if (saved) showToast('Не смогла войти по сохранённой почте — войдите заново', 'error');
+    }
   });
 });
 </script>
