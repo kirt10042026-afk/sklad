@@ -862,14 +862,10 @@ const WELCOME = [
 ];
 document.addEventListener('DOMContentLoaded', () => {
   renderAuto();
-  const saved = loadEmail();
+  const h = new Date().getHours();
+  let greet = h < 6 ? 'Доброй ночи. ' : h < 12 ? 'Доброе утро. ' : h < 18 ? 'Добрый день. ' : 'Добрый вечер. ';
   autoLogin().then(loggedIn => {
-    if (!loggedIn) {
-      const h = new Date().getHours();
-      let greet = h < 6 ? 'Доброй ночи. ' : h < 12 ? 'Доброе утро. ' : h < 18 ? 'Добрый день. ' : 'Добрый вечер. ';
-      addMsg(greet + WELCOME[Math.floor(Math.random() * WELCOME.length)], 'bot');
-      if (saved) showToast('Не смогла войти по сохранённой почте — войдите заново', 'error');
-    }
+    if (!loggedIn) addMsg(greet + WELCOME[Math.floor(Math.random() * WELCOME.length)], 'bot');
   });
 });
 </script>
