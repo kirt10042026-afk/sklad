@@ -1,510 +1,424 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Алиса — склад</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <style>
-      :root {
-        --bg-page: #f3f4f6;
-        --card-bg: #ffffff;
-        --accent: #5B3A29;
-        --accent-dark: #3e2723;
-        --text-main: #111827;
-        --text-muted: #6b7280;
-        --border: #e5e7eb;
-        --shadow-md: 0 4px 14px rgba(0,0,0,0.08);
-        --radius-lg: 18px;
-        --radius-md: 12px;
-      }
-      body {
-        font-family: 'Inter', sans-serif;
-        background: var(--bg-page);
-        margin: 0; padding: 16px;
-        color: var(--text-main);
-        display: flex; justify-content: center;
-        min-height: 100vh; box-sizing: border-box;
-      }
-      *, *::before, *::after { box-sizing: border-box; }
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Склад — ЖД запчасти</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg-page:#f3f4f6;--card-bg:#fff;--accent:#5B3A29;--accent-dark:#3e2723;--text-main:#111827;--text-muted:#6b7280;--border:#e5e7eb;--shadow-md:0 4px 14px rgba(0,0,0,.08);--radius-lg:18px;--radius-md:12px}
+*{box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:var(--bg-page);margin:0;padding:16px;color:var(--text-main);display:flex;justify-content:center;min-height:100vh}
+.bento{width:100%;max-width:520px;display:grid;grid-template-columns:1fr 1fr;gap:12px;align-content:start}
+@media(max-width:480px){.bento{grid-template-columns:1fr}}
+.b-card{background:var(--card-bg);border-radius:var(--radius-lg);padding:16px;box-shadow:var(--shadow-md)}
+.b-card.header{grid-column:span 2;background:linear-gradient(135deg,var(--accent),var(--accent-dark));color:#fff;display:flex;align-items:center;gap:14px}
+.logo{width:52px;height:52px;flex-shrink:0;background:rgba(255,255,255,.18);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px}
+.header h1{margin:0;font-size:19px;font-weight:700}
+.header .sub{color:rgba(255,255,255,.85);font-size:13px;margin-top:2px}
+.b-card.profile{display:flex;flex-direction:column;gap:10px}
+.avatar{width:44px;height:44px;background:#ede9fe;color:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px}
+.emp-name{font-weight:700;font-size:15px;margin:0}
+.emp-role{color:var(--accent);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px}
+.badge{display:inline-block;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;width:fit-content}
+.badge.guest{background:#fee2e2;color:#b91c1c}
+.badge.staff{background:#d1fae5;color:#047857}
+#loginBox{display:flex;gap:8px}
+#loginBox input{flex:1;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-md);font:inherit;font-size:14px;outline:none}
+#loginBox input:focus{border-color:var(--accent)}
+.btn-primary{background:var(--accent);color:#fff;border:none;cursor:pointer;border-radius:var(--radius-md);font:inherit;font-weight:600;font-size:14px;padding:10px 16px;transition:.2s}
+.btn-primary:hover{background:var(--accent-dark);transform:translateY(-1px)}
+.b-card.chat{grid-column:span 2;display:flex;flex-direction:column;height:380px;padding:12px}
+#chat{flex:1;overflow-y:auto;background:#f9fafb;border:1px solid var(--border);border-radius:var(--radius-md);padding:12px;display:flex;flex-direction:column;gap:10px}
+.msg{padding:10px 14px;border-radius:14px;max-width:85%;font-size:14px;line-height:1.5;white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere;animation:pop .25s ease-out}
+@keyframes pop{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.msg.bot{background:#fff;border:1px solid var(--border);align-self:flex-start}
+.msg.user{background:var(--accent);color:#fff;align-self:flex-end}
+.msg .who{font-size:11px;color:var(--accent);font-weight:700;margin-bottom:3px}
+.msg.typing{color:#9ca3af;font-style:italic;background:#fff;border:1px dashed var(--border)}
+.b-card.input{grid-column:span 2}
+.auto-row{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-muted);margin-bottom:10px}
+.switch{position:relative;display:inline-block;width:40px;height:22px;flex-shrink:0}
+.switch input{opacity:0;width:0;height:0}
+.slider{position:absolute;cursor:pointer;inset:0;background:#d1d5db;border-radius:22px;transition:.3s}
+.slider::before{content:"";position:absolute;width:16px;height:16px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.3s}
+.switch input:checked+.slider{background:var(--accent)}
+.switch input:checked+.slider::before{transform:translateX(18px)}
+#inputRow{display:flex;gap:8px}
+#text{flex:1;padding:12px 14px;border:1px solid var(--border);border-radius:var(--radius-md);font:inherit;font-size:15px;outline:none}
+#text:focus{border-color:var(--accent)}
+.btn-mic{width:46px;height:46px;border-radius:var(--radius-md);border:1px solid var(--border);background:#fff;cursor:pointer;font-size:19px;transition:.2s;flex-shrink:0}
+.btn-mic:hover{border-color:var(--accent)}
+.btn-mic.listening{background:#2e8b57;border-color:#2e8b57;color:#fff;animation:pulse 1.4s ease-in-out infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(46,139,87,.4)}50%{box-shadow:0 0 0 8px rgba(46,139,87,0)}}
+.btn-send{width:46px;height:46px;border-radius:var(--radius-md);border:none;background:var(--accent);color:#fff;font-size:17px;font-weight:700;cursor:pointer;flex-shrink:0;transition:.2s}
+.btn-send:hover{background:var(--accent-dark)}
+#mic-status{font-size:12px;color:var(--text-muted);margin-top:8px;min-height:16px}
+#toast-container{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:9999;pointer-events:none}
+.toast{background:#1f2937;color:#fff;padding:12px 18px;border-radius:12px;box-shadow:0 12px 30px rgba(0,0,0,.25);opacity:0;visibility:hidden;transform:translateY(20px);transition:.3s cubic-bezier(.25,1,.5,1);font-weight:500;font-size:13px;max-width:calc(100vw - 24px);display:flex;align-items:center;gap:10px}
+.toast.show{opacity:1;visibility:visible;transform:none}
+.toast.error{background:#ef4444}
+</style>
+</head>
+<body>
+<div class="bento">
+  <div class="b-card header">
+    <div class="logo">📦</div>
+    <div>
+      <h1>Склад</h1>
+      <div class="sub">ЖД запчасти — голосом и текстом</div>
+    </div>
+  </div>
 
-      .bento {
-        width: 100%; max-width: 520px;
-        display: grid; grid-template-columns: 1fr 1fr;
-        gap: 12px; align-content: start;
-      }
-      @media (max-width: 480px) { .bento { grid-template-columns: 1fr; } }
-
-      .b-card {
-        background: var(--card-bg);
-        border-radius: var(--radius-lg);
-        padding: 16px;
-        box-shadow: var(--shadow-md);
-      }
-
-      /* Шапка */
-      .b-card.header {
-        grid-column: span 2;
-        background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
-        color: #fff;
-        display: flex; align-items: center; gap: 14px;
-      }
-      .logo {
-        width: 52px; height: 52px; flex-shrink: 0;
-        background: rgba(255,255,255,0.18); border-radius: 50%;
-        display: flex; align-items: center; justify-content: center; font-size: 26px;
-      }
-      .header h1 { margin: 0; font-size: 19px; font-weight: 700; }
-      .header .sub { color: rgba(255,255,255,0.85); font-size: 13px; margin-top: 2px; }
-
-      /* Профиль */
-      .b-card.profile { display: flex; flex-direction: column; gap: 10px; }
-      .avatar {
-        width: 44px; height: 44px; background: #ede9fe; color: var(--accent);
-        border-radius: 50%; display: flex; align-items: center; justify-content: center;
-        font-size: 22px;
-      }
-      .emp-name { font-weight: 700; font-size: 15px; margin: 0; }
-      .emp-role {
-        color: var(--accent); font-size: 11px; font-weight: 700;
-        text-transform: uppercase; letter-spacing: 0.6px;
-      }
-      .badge {
-        display: inline-block; padding: 4px 10px; border-radius: 20px;
-        font-size: 11px; font-weight: 700; width: fit-content;
-      }
-      .badge.guest { background: #fee2e2; color: #b91c1c; }
-      .badge.staff { background: #d1fae5; color: #047857; }
-      #loginBox { display: flex; gap: 8px; }
-      #loginBox input {
-        flex: 1; padding: 10px 12px; border: 1px solid var(--border);
-        border-radius: var(--radius-md); font: inherit; font-size: 14px; outline: none;
-      }
-      #loginBox input:focus { border-color: var(--accent); }
-      .btn-primary {
-        background: var(--accent); color: #fff; border: none; cursor: pointer;
-        border-radius: var(--radius-md); font: inherit; font-weight: 600; font-size: 14px;
-        padding: 10px 16px; transition: all 0.2s;
-      }
-      .btn-primary:hover { background: var(--accent-dark); transform: translateY(-1px); }
-
-      /* Чат */
-      .b-card.chat {
-        grid-column: span 2;
-        display: flex; flex-direction: column;
-        height: 380px; padding: 12px;
-      }
-      #chat {
-        flex: 1; overflow-y: auto;
-        background: #f9fafb; border: 1px solid var(--border);
-        border-radius: var(--radius-md); padding: 12px;
-        display: flex; flex-direction: column; gap: 10px;
-      }
-      .msg {
-        padding: 10px 14px; border-radius: 14px; max-width: 85%;
-        font-size: 14px; line-height: 1.5; white-space: pre-wrap;
-        word-break: break-word; overflow-wrap: anywhere;
-        animation: pop 0.25s ease-out;
-      }
-      @keyframes pop { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
-      .msg.bot { background: #fff; border: 1px solid var(--border); align-self: flex-start; }
-      .msg.user { background: var(--accent); color: #fff; align-self: flex-end; }
-      .msg .who {
-        font-size: 11px; color: var(--accent); font-weight: 700;
-        margin-bottom: 3px; display: flex; align-items: center; gap: 4px;
-      }
-      .msg.typing { color: #9ca3af; font-style: italic; background: #fff; border: 1px dashed var(--border); }
-
-      /* Ввод */
-      .b-card.input { grid-column: span 2; }
-      .auto-row {
-        display: flex; align-items: center; gap: 8px;
-        font-size: 13px; color: var(--text-muted); margin-bottom: 10px;
-      }
-      .switch { position: relative; display: inline-block; width: 40px; height: 22px; flex-shrink: 0; }
-      .switch input { opacity: 0; width: 0; height: 0; }
-      .slider {
-        position: absolute; cursor: pointer; inset: 0;
-        background: #d1d5db; border-radius: 22px; transition: .3s;
-      }
-      .slider::before {
-        content: ""; position: absolute; width: 16px; height: 16px;
-        left: 3px; bottom: 3px; background: #fff; border-radius: 50%; transition: .3s;
-      }
-      .switch input:checked + .slider { background: var(--accent); }
-      .switch input:checked + .slider::before { transform: translateX(18px); }
-
-      #inputRow { display: flex; gap: 8px; }
-      #text {
-        flex: 1; padding: 12px 14px; border: 1px solid var(--border);
-        border-radius: var(--radius-md); font: inherit; font-size: 15px; outline: none;
-      }
-      #text:focus { border-color: var(--accent); }
-      .btn-mic {
-        width: 46px; height: 46px; border-radius: var(--radius-md);
-        border: 1px solid var(--border); background: #fff; cursor: pointer;
-        font-size: 19px; transition: all 0.2s; flex-shrink: 0;
-      }
-      .btn-mic:hover { border-color: var(--accent); }
-      .btn-mic.listening {
-        background: #2e8b57; border-color: #2e8b57; color: #fff;
-        animation: pulse 1.4s ease-in-out infinite;
-      }
-      @keyframes pulse {
-        0%,100% { box-shadow: 0 0 0 0 rgba(46,139,87,.4); }
-        50% { box-shadow: 0 0 0 8px rgba(46,139,87,0); }
-      }
-      .btn-send {
-        width: 46px; height: 46px; border-radius: var(--radius-md);
-        border: none; background: var(--accent); color: #fff;
-        font-size: 17px; font-weight: 700; cursor: pointer; flex-shrink: 0;
-        transition: all 0.2s;
-      }
-      .btn-send:hover { background: var(--accent-dark); }
-      #mic-status { font-size: 12px; color: var(--text-muted); margin-top: 8px; min-height: 16px; }
-
-      /* Тосты */
-      #toast-container {
-        position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-        z-index: 9999; pointer-events: none;
-      }
-      .toast {
-        background: #1f2937; color: #fff; padding: 12px 18px; border-radius: 12px;
-        box-shadow: 0 12px 30px rgba(0,0,0,0.25); opacity: 0; visibility: hidden;
-        transform: translateY(20px); transition: all .3s cubic-bezier(.25,1,.5,1);
-        font-weight: 500; font-size: 13px; max-width: calc(100vw - 24px);
-        display: flex; align-items: center; gap: 10px;
-      }
-      .toast.show { opacity: 1; visibility: visible; transform: none; }
-      .toast.error { background: #ef4444; }
-    </style>
-  </head>
-  <body>
-    <div class="bento">
-      <div class="b-card header">
-        <div class="logo">✨</div>
-        <div>
-          <h1>Алиса</h1>
-          <div class="sub">склад — голосом и текстом</div>
-        </div>
-      </div>
-
-      <div class="b-card profile">
-        <div id="profileHeader" style="display:none; display:flex; align-items:center; gap:10px;">
-          <div class="avatar">👤</div>
-          <div>
-            <h3 class="emp-name" id="emp-name">Гость</h3>
-            <div class="emp-role" id="emp-role">только остатки</div>
-          </div>
-        </div>
-        <div id="loginBox">
-          <input id="email" placeholder="Почта (пусто — гость)"
-                 onkeydown="if(event.key=='Enter')doLogin()">
-          <button class="btn-primary" onclick="doLogin()">Войти</button>
-        </div>
-        <div id="accessBadgeWrap" style="display:none;">
-          <span class="badge guest" id="access-badge">Только остатки</span>
-        </div>
-      </div>
-
-      <div class="b-card chat">
-        <div id="chat"></div>
-      </div>
-
-      <div class="b-card input">
-        <div class="auto-row">
-          <label class="switch">
-            <input type="checkbox" id="autoListen" onchange="toggleAutoMode()" checked>
-            <span class="slider"></span>
-          </label>
-          <span><b>Авто-режим</b> — слушаю постоянно, кнопку жать не нужно</span>
-        </div>
-        <div id="inputRow">
-          <input id="text" placeholder="«Алиса, сколько крана 4314?»"
-                 onkeydown="if(event.key=='Enter')sendText()">
-          <button class="btn-mic" id="mic" onclick="onMic()" title="Слушать">🎤</button>
-          <button class="btn-send" onclick="sendText()">→</button>
-        </div>
-        <div id="mic-status"></div>
+  <div class="b-card profile">
+    <div id="profileHeader" style="display:none;align-items:center;gap:10px;">
+      <div class="avatar">👤</div>
+      <div>
+        <h3 class="emp-name" id="emp-name">Гость</h3>
+        <div class="emp-role" id="emp-role">только остатки</div>
       </div>
     </div>
+    <div id="loginBox">
+      <input id="email" placeholder="Почта (пусто — гость)"
+             onkeydown="if(event.key=='Enter')doLogin()">
+      <button class="btn-primary" onclick="doLogin()">Войти</button>
+    </div>
+    <div id="accessBadgeWrap" style="display:none;">
+      <span class="badge guest" id="access-badge">Только остатки</span>
+    </div>
+  </div>
 
-    <div id="toast-container"><div id="toast" class="toast"></div></div>
+  <div class="b-card chat"><div id="chat"></div></div>
 
-    <script>
-      const API_URL = 'https://script.google.com/macros/s/AKfycbyPttDFuAl8cU4qLgoIylS8rlNzFVtnZZ3YVXrw50UyAh6CJJjSgtE3gvo42RTWUKs_/exec';
+  <div class="b-card input">
+    <div class="auto-row">
+      <label class="switch">
+        <input type="checkbox" id="autoListen" onchange="toggleAutoMode()" checked>
+        <span class="slider"></span>
+      </label>
+      <span><b>Авто-режим</b> — слушаю постоянно, кнопку жать не нужно</span>
+    </div>
+    <div id="inputRow">
+      <input id="text" placeholder="«Сколько РТИ-132?»"
+             onkeydown="if(event.key=='Enter')sendText()">
+      <button class="btn-mic" id="mic" onclick="onMic()" title="Слушать">🎤</button>
+      <button class="btn-send" onclick="sendText()">→</button>
+    </div>
+    <div id="mic-status"></div>
+  </div>
+</div>
 
-      let user = { email: '', name: 'Гость', canWrite: false };
-      let voiceState = {};
-      let rec = null;
-      let listening = false;
-      let autoMode = true;
-      let botSpeaking = false;
-      let micGranted = false;
-      let restartTimer = null;
-      let toastTimer = null;
-      let statusTimer = null;
+<div id="toast-container"><div id="toast" class="toast"></div></div>
 
-      // ---------- ТОСТЫ ----------
-      function showToast(message, type) {
-        const toast = document.getElementById('toast');
-        toast.className = 'toast show' + (type === 'error' ? ' error' : '');
-        toast.innerHTML = '<span style="font-size:18px">' + (type === 'error' ? '❌' : '✅') + '</span><span>' + message + '</span>';
-        clearTimeout(toastTimer);
-        toastTimer = setTimeout(() => toast.classList.remove('show'), 3500);
-      }
+<script>
+const API_URL = 'https://script.google.com/macros/s/AKfycbxO014U0nDhQ861Ah2_FYUjuENCciPwWOX0BMq67e-JDhoPY8L2ZULFCDwtoQWT9kzt/exec';
 
-      // ---------- СИНОНИМЫ (фронт подстраховывает сервер) ----------
-      const SYNONYMS = [
-        { re: /\b(добав(?:ь|ить|ите)\s+(?:нов[а-яё]*\s+)?товар|созда(?:ть|й)\s+товар)\b/i, to: 'добавь товар' },
-        { re: /\b(сним(?:и|ите|ать)|убер(?:и|ите|ь)|отмен(?:и|ить|ите))\s+резерв\w*\b/i, to: 'сними резерв' },
-        { re: /\b(зарезерв\w*|забронир\w*|бронь)\b/i, to: 'резерв' },
-        { re: /\bотгруз(?:ка|ить|им|и)\b/i, to: 'отгрузка' },
-        { re: /\b(прибав\w*|приход\w*|привез\w*|принесли|принял\w*|поступлени\w*|плюс)\b/i, to: 'пришло' },
-        { re: /\b(расход\w*|продали|увез\w*|ушло|минус|убав\w*)\b/i, to: 'списал' },
-        { re: /\b(остатк\w*|сколько\s+остал(?:ось|ся))\b/i, to: 'сколько' }
-      ];
-      function normalize(q) {
-        let s = ' ' + String(q).toLowerCase().replace(/ё/g, 'е') + ' ';
-        for (const { re, to } of SYNONYMS) { if (re.test(s)) { s = s.replace(re, ' ' + to + ' '); break; } }
-        return s.replace(/\s+/g, ' ').trim();
-      }
+let user = { email: '', name: 'Гость', canWrite: false };
+let voiceState = {};
+let rec = null;
+let listening = false;
+let autoMode = true;
+let botSpeaking = false;
+let micGranted = false;
+let restartTimer = null;
+let toastTimer = null;
+let statusTimer = null;
 
-      // ---------- СЕРВЕР ----------
-      async function api(params) {
-        const url = new URL(API_URL);
-        for (const k in params) {
-          const v = params[k];
-          url.searchParams.set(k, typeof v === 'object' ? JSON.stringify(v) : v);
-        }
-        const res = await fetch(url.toString(), { method: 'GET' });
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        return res.json();
-      }
+// ---------- ТОСТЫ ----------
+function showToast(message, type) {
+  const toast = document.getElementById('toast');
+  toast.className = 'toast show' + (type === 'error' ? ' error' : '');
+  toast.innerHTML = '<span style="font-size:18px">' + (type === 'error' ? '❌' : '✅') + '</span><span>' + message + '</span>';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.remove('show'), 3500);
+}
 
-      // ---------- ЧАТ ----------
-      function addMsg(text, who) {
-        const box = document.getElementById('chat');
-        const d = document.createElement('div');
-        d.className = 'msg ' + who;
-        if (who === 'bot') {
-          const w = document.createElement('div');
-          w.className = 'who';
-          w.textContent = '✨ Алиса';
-          d.appendChild(w);
-        }
-        d.appendChild(document.createTextNode(text));
-        box.appendChild(d);
-        box.scrollTop = box.scrollHeight;
-      }
-      function addTyping() {
-        const box = document.getElementById('chat');
-        const d = document.createElement('div');
-        d.className = 'msg bot typing';
-        d.textContent = 'Алиса печатает…';
-        box.appendChild(d);
-        box.scrollTop = box.scrollHeight;
-        return d;
-      }
-      function sendText() {
-        const el = document.getElementById('text');
-        const t = el.value.trim();
-        if (!t) return;
-        el.value = '';
-        send(t);
-      }
-      async function send(query) {
-        addMsg(query, 'user');
-        const norm = normalize(query);
-        const t = addTyping();
-        try {
-          const out = await api({ action: 'voice', query: norm, state: voiceState, email: user.email });
-          voiceState = out.state || {};
-          t.remove();
-          addMsg(out.reply, 'bot');
-          speak(out.reply);
-        } catch (err) {
-          t.remove();
-          addMsg('Ошибка связи: ' + (err && err.message ? err.message : err), 'bot');
-        }
-      }
-      async function doLogin() {
-        const email = document.getElementById('email').value;
-        const t = addTyping();
-        try {
-          const acc = await api({ action: 'login', email: email });
-          user = acc;
-          document.getElementById('emp-name').textContent = acc.name || 'Гость';
-          document.getElementById('emp-role').textContent = acc.canWrite ? (acc.role || 'полный доступ') : 'только остатки';
-          const badge = document.getElementById('access-badge');
-          badge.textContent = acc.canWrite ? '✓ Полный доступ' : 'Только остатки';
-          badge.className = 'badge ' + (acc.canWrite ? 'staff' : 'guest');
-          document.getElementById('accessBadgeWrap').style.display = 'block';
-          document.getElementById('profileHeader').style.display = 'flex';
-          document.getElementById('loginBox').style.display = 'none';
-          t.remove();
-          addMsg(acc.message, 'bot');
-          speak(acc.message);
-          showToast(acc.canWrite ? 'Полный доступ' : 'Только остатки');
-        } catch (err) {
-          t.remove();
-          showToast('Ошибка входа: ' + (err && err.message ? err.message : err), 'error');
-        }
-      }
+// ---------- ЧИСЛА СЛОВАМИ ----------
+const NUM_WORDS = {
+  'ноль':'0','один':'1','одна':'1','одно':'1','два':'2','две':'2','три':'3','четыре':'4','пять':'5',
+  'шесть':'6','семь':'7','восемь':'8','девять':'9','десять':'10','одиннадцать':'11','двенадцать':'12',
+  'тринадцать':'13','четырнадцать':'14','пятнадцать':'15','шестнадцать':'16','семнадцать':'17',
+  'восемнадцать':'18','девятнадцать':'19','двадцать':'20','тридцать':'30','сорок':'40','пятьдесят':'50',
+  'шестьдесят':'60','семьдесят':'70','восемьдесят':'80','девяносто':'90','сто':'100','двести':'200',
+  'триста':'300','четыреста':'400','пятьсот':'500','шестьсот':'600','семьсот':'700','восемьсот':'800','девятьсот':'900'
+};
 
-      // ---------- МИКРОФОН ----------
-      function setStatus(text) {
-        const s = document.getElementById('mic-status');
-        s.textContent = text;
-        clearTimeout(statusTimer);
-        if (text) statusTimer = setTimeout(() => { s.textContent = ''; }, 6000);
-      }
-
-      async function onMic() {
-        if (listening) { try { rec.stop(); } catch (e) {} return; }
-        const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (!SR) { showToast('Нужен Chrome или Яндекс.Браузер', 'error'); return; }
-        if (micGranted) { startRecognition(); return; }
-        try {
-          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-          stream.getTracks().forEach(tr => tr.stop());
-          micGranted = true;
-          startRecognition();
-        } catch (e) {
-          if (e.name === 'NotAllowedError' || e.name === 'PermissionDeniedError') {
-            showToast('Микрофон запрещён: значок 🎤 слева от адреса → «Разрешить»', 'error');
-          } else if (e.name === 'NotFoundError') {
-            showToast('Микрофон не найден. Проверьте подключение', 'error');
-          } else {
-            showToast('Микрофон недоступен: ' + e.name, 'error');
-          }
-          if (autoMode) { autoMode = false; document.getElementById('autoListen').checked = false; }
-        }
-      }
-
-      function scheduleRestart() {
-        clearTimeout(restartTimer);
-        restartTimer = setTimeout(() => {
-          if (autoMode && !listening && !botSpeaking) startRecognition();
-        }, 700);
-      }
-
-      function startRecognition() {
-        const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-        rec = new SR();
-        rec.lang = 'ru-RU';
-        rec.interimResults = true;
-        rec.maxAlternatives = 1;
-
-        listening = true;
-        setMic(true);
-        setStatus('Слушаю… говорите.');
-
-        rec.onstart = () => setStatus('Микрофон активен. Говорите.');
-        rec.onspeechstart = () => setStatus('Слышу речь…');
-
-        rec.onresult = function (e) {
-          let interim = '', final = '';
-          for (let i = 0; i < e.results.length; i++) {
-            const r = e.results[i];
-            if (r.isFinal) final += r[0].transcript;
-            else interim += r[0].transcript;
-          }
-          if (interim) setStatus('Слышу: «' + interim.trim() + '»');
-          if (final.trim()) {
-            setStatus('');
-            listening = false; setMic(false);
-            send(final.trim());
-          }
-        };
-
-        rec.onerror = function (e) {
-          listening = false; setMic(false);
-          const map = {
-            'not-allowed': 'Доступ к микрофону запрещён браузером',
-            'network': 'Нет связи с сервером распознавания — проверьте интернет',
-            'audio-capture': 'Микрофон не найден'
-          };
-          if (e.error !== 'aborted' && e.error !== 'no-speech') {
-            showToast(map[e.error] || ('Ошибка: ' + e.error), 'error');
-          }
-        };
-
-        rec.onend = function () {
-          listening = false; setMic(false);
-          if (botSpeaking) return;
-          if (autoMode) { setStatus('Слушаю дальше… (авто-режим)'); scheduleRestart(); }
-          else setStatus('Ожидание. Нажмите 🎤, чтобы сказать ещё.');
-        };
-
-        try { rec.start(); }
-        catch (e) { listening = false; setMic(false); }
-      }
-
-      function setMic(on) {
-        const b = document.getElementById('mic');
-        b.classList.toggle('listening', on);
-        b.textContent = on ? '🔴' : '🎤';
-      }
-
-      function toggleAutoMode() {
-        autoMode = document.getElementById('autoListen').checked;
-        if (autoMode) { onMic(); showToast('Авто-режим включён — я всегда на связи 🎙️'); }
-        else {
-          clearTimeout(restartTimer);
-          if (listening) { try { rec.stop(); } catch (e) {} }
-          setStatus('Авто-режим выключен');
-        }
-      }
-
-      // ---------- ГОЛОС (как у Алисы) ----------
-      let aliceVoice = null;
-      function pickVoice() {
-        const vs = speechSynthesis.getVoices();
-        const ru = vs.filter(v => /ru/i.test(v.lang));
-        if (!ru.length) return;
-        aliceVoice =
-          ru.find(v => /milena|milenaTTS/i.test(v.name)) ||
-          ru.find(v => /alena|алена/i.test(v.name)) ||
-          ru.find(v => /katya|katia|ekaterina|female|женск/i.test(v.name)) ||
-          ru.find(v => /yandex|яндекс/i.test(v.name)) ||
-          ru.find(v => /google/i.test(v.name)) ||
-          ru[0];
-      }
-      if (window.speechSynthesis) {
-        pickVoice();
-        speechSynthesis.onvoiceschanged = pickVoice;
-      }
-
-      function speak(text) {
-        if (!window.speechSynthesis) return;
-        try {
-          if (listening) { botSpeaking = true; try { rec.stop(); } catch (e) {} }
-          speechSynthesis.cancel();
-          // живая речь: убираем служебные скобки и переносы-списки читаются паузами
-          const clean = String(text).replace(/\n/g, '. ').slice(0, 300);
-          const u = new SpeechSynthesisUtterance(clean);
-          u.lang = 'ru-RU';
-          if (aliceVoice) u.voice = aliceVoice;
-          u.rate = 1.05;
-          u.pitch = 1.1;   // чуть выше и бодрее — ближе к тону Алисы
-          u.volume = 1;
-          const done = () => { botSpeaking = false; if (autoMode && !listening) scheduleRestart(); };
-          u.onend = done; u.onerror = done;
-          speechSynthesis.speak(u);
-        } catch (e) { botSpeaking = false; }
-      }
-
-      // ---------- ПРИВЕТСТВИЕ ----------
-const WELCOME = [
-  'Привет! Я Алиса — голос твоего склада ЖД‑запчастей. Говори, что привезли, что списали, что отложить в резерв, а я всё запишу.',
-  'Здравствуйте! Я Алиса. Скажите «пришло манжета Д49 пять штук» или «сколько кран 4314» — дальше я сама всё спрошу и запишу.',
-  'Привет-привет! Алиса на связи. Хотите — говорите голосом, хотите — пишите. Колодки, втулки, подшипники — разберусь и так, и так.'
+// ---------- СИНОНИМЫ (фронт подстраховывает сервер) ----------
+const SYNONYMS = [
+  { re: /\b(добав(?:ь|ить|ите)\s+(?:нов[а-яё]*\s+)?товар|созда(?:ть|й)\s+товар)\b/i, to: 'добавь товар' },
+  { re: /\b(сним(?:и|ите|ать)|убер(?:и|ите|ь)|отмен(?:и|ить|ите))\s+резерв\w*\b/i, to: 'сними резерв' },
+  { re: /\b(зарезерв\w*|забронир\w*|бронь)\b/i, to: 'резерв' },
+  { re: /\bотгруз(?:ка|ить|им|и)\b/i, to: 'отгрузка' },
+  { re: /\b(прибав\w*|приход\w*|привез\w*|принесли|принял\w*|поступлени\w*|плюс)\b/i, to: 'пришло' },
+  { re: /\b(расход\w*|продали|увез\w*|ушло|минус|убав\w*)\b/i, to: 'списал' },
+  { re: /\b(остатк\w*|сколько\s+остал(?:ось|ся))\b/i, to: 'сколько' }
 ];
-      document.addEventListener('DOMContentLoaded', () => {
-        addMsg(WELCOME[Math.floor(Math.random() * WELCOME.length)], 'bot');
-      });
-    </script>
-  </body>
+
+// ---------- НОРМАЛИЗАЦИЯ: тире, точки, числа словами ----------
+function normalize(q) {
+  let s = ' ' + String(q).toLowerCase().replace(/ё/g, 'е') + ' ';
+
+  // Голосовые распознаватели часто диктуют знаки словами — превращаем их обратно
+  s = s.replace(/\s+(?:точка|точки|точку)\s+/g, '.');
+  s = s.replace(/\s+(?:тире|дефис|минус|черточка)\s+/g, '-');
+  s = s.replace(/\s+запята[яию]\s+/g, ',');
+  s = s.replace(/\s+слэш\s+/g, '/');
+
+  // «эр тэ и сто тридцать два» → «рти132»: склеиваем буквы кода и числа
+  s = s.replace(/\b([а-яa-z]{1,4})\s+(\d{2,6})\b/g, '$1$2');
+
+  // Числа словами → цифры: «сто тридцать два» → «132»
+  let prev;
+  do {
+    prev = s;
+    s = s.replace(/\b(сто|двести|триста|четыреста|пятьсот|шестьсот|семьсот|восемьсот|девятьсот|двадцать|тридцать|сорок|пятьдесят|шестьдесят|семьдесят|восемьдесят|девяносто|ноль|один|одна|одно|два|две|три|четыре|пять|шесть|семь|восемь|девять|десять|одиннадцать|двенадцать|тринадцать|четырнадцать|пятнадцать|шестнадцать|семнадцать|восемнадцать|девятнадцать)\b\s+(?=(?:сто|двести|триста|четыреста|пятьсот|шестьсот|семьсот|восемьсот|девятьсот|двадцать|тридцать|сорок|пятьдесят|шестьдесят|семьдесят|восемьдесят|девяносто|ноль|один|одна|одно|два|две|три|четыре|пять|шесть|семь|восемь|девять|десять|одиннадцать|двенадцать|тринадцать|четырнадцать|пятнадцать|шестнадцать|семнадцать|восемнадцать|девятнадцать)\b)/g, '');
+    s = s.replace(/\b(?:сто|двести|триста|четыреста|пятьсот|шестьсот|семьсот|восемьсот|девятьсот)\b/g, m => NUM_WORDS[m]);
+    s = s.replace(/\b(?:двадцать|тридцать|сорок|пятьдесят|шестьдесят|семьдесят|восемьдесят|девяносто)\b/g, m => NUM_WORDS[m]);
+    s = s.replace(/\b(?:ноль|один|одна|одно|два|две|три|четыре|пять|шесть|семь|восемь|девять|десять|одиннадцать|двенадцать|тринадцать|четырнадцать|пятнадцать|шестнадцать|семнадцать|восемнадцать|девятнадцать)\b/g, m => NUM_WORDS[m]);
+    // Склейка рядом стоящих цифр из составного числа: «100 32» → «10032» (только когда между ними нет предлогов)
+    s = s.replace(/\b(\d)\s+(\d)\b(?![^а-я]*(?:штук|шт|короб|упаков))/g, '$1$2');
+  } while (s !== prev);
+
+  for (const { re, to } of SYNONYMS) { if (re.test(s)) { s = s.replace(re, ' ' + to + ' '); break; } }
+  return s.replace(/\s+/g, ' ').trim();
+}
+
+// ---------- СЕРВЕР ----------
+async function api(params) {
+  const url = new URL(API_URL);
+  for (const k in params) {
+    const v = params[k];
+    url.searchParams.set(k, typeof v === 'object' ? JSON.stringify(v) : v);
+  }
+  const res = await fetch(url.toString(), { method: 'GET' });
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  return res.json();
+}
+
+// ---------- ЧАТ ----------
+function addMsg(text, who) {
+  const box = document.getElementById('chat');
+  const d = document.createElement('div');
+  d.className = 'msg ' + who;
+  if (who === 'bot') {
+    const w = document.createElement('div');
+    w.className = 'who';
+    w.textContent = '📦 Склад';
+    d.appendChild(w);
+  }
+  d.appendChild(document.createTextNode(text));
+  box.appendChild(d);
+  box.scrollTop = box.scrollHeight;
+}
+function addTyping() {
+  const box = document.getElementById('chat');
+  const d = document.createElement('div');
+  d.className = 'msg bot typing';
+  d.textContent = 'Печатает…';
+  box.appendChild(d);
+  box.scrollTop = box.scrollHeight;
+  return d;
+}
+function sendText() {
+  const el = document.getElementById('text');
+  const t = el.value.trim();
+  if (!t) return;
+  el.value = '';
+  send(t);
+}
+async function send(query) {
+  addMsg(query, 'user');
+  const norm = normalize(query);
+  const t = addTyping();
+  try {
+    const out = await api({ action: 'voice', query: norm, state: voiceState, email: user.email });
+    voiceState = out.state || {};
+    t.remove();
+    addMsg(out.reply, 'bot');
+    speak(out.reply);
+  } catch (err) {
+    t.remove();
+    addMsg('Ошибка связи: ' + (err && err.message ? err.message : err), 'bot');
+  }
+}
+async function doLogin() {
+  const email = document.getElementById('email').value;
+  const t = addTyping();
+  try {
+    const acc = await api({ action: 'login', email: email });
+    user = acc;
+    document.getElementById('emp-name').textContent = acc.name || 'Гость';
+    document.getElementById('emp-role').textContent = acc.canWrite ? (acc.role || 'полный доступ') : 'только остатки';
+    const badge = document.getElementById('access-badge');
+    badge.textContent = acc.canWrite ? '✓ Полный доступ' : 'Только остатки';
+    badge.className = 'badge ' + (acc.canWrite ? 'staff' : 'guest');
+    document.getElementById('accessBadgeWrap').style.display = 'block';
+    document.getElementById('profileHeader').style.display = 'flex';
+    document.getElementById('loginBox').style.display = 'none';
+    t.remove();
+    addMsg(acc.message, 'bot');
+    speak(acc.message);
+    showToast(acc.canWrite ? 'Полный доступ' : 'Только остатки');
+  } catch (err) {
+    t.remove();
+    showToast('Ошибка входа: ' + (err && err.message ? err.message : err), 'error');
+  }
+}
+
+// ---------- МИКРОФОН ----------
+function setStatus(text) {
+  const s = document.getElementById('mic-status');
+  s.textContent = text;
+  clearTimeout(statusTimer);
+  if (text) statusTimer = setTimeout(() => { s.textContent = ''; }, 6000);
+}
+
+async function onMic() {
+  if (listening) { try { rec.stop(); } catch (e) {} return; }
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { showToast('Нужен Chrome или Яндекс.Браузер', 'error'); return; }
+  if (micGranted) { startRecognition(); return; }
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    stream.getTracks().forEach(tr => tr.stop());
+    micGranted = true;
+    startRecognition();
+  } catch (e) {
+    if (e.name === 'NotAllowedError' || e.name === 'PermissionDeniedError') {
+      showToast('Микрофон запрещён: значок 🎤 слева от адреса → «Разрешить»', 'error');
+    } else if (e.name === 'NotFoundError') {
+      showToast('Микрофон не найден. Проверьте подключение', 'error');
+    } else {
+      showToast('Микрофон недоступен: ' + e.name, 'error');
+    }
+    if (autoMode) { autoMode = false; document.getElementById('autoListen').checked = false; }
+  }
+}
+
+function scheduleRestart() {
+  clearTimeout(restartTimer);
+  restartTimer = setTimeout(() => {
+    if (autoMode && !listening && !botSpeaking) startRecognition();
+  }, 700);
+}
+
+function startRecognition() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  rec = new SR();
+  rec.lang = 'ru-RU';
+  rec.interimResults = true;
+  rec.maxAlternatives = 1;
+
+  listening = true;
+  setMic(true);
+  setStatus('Слушаю… говорите.');
+
+  rec.onresult = function (e) {
+    let interim = '', final = '';
+    for (let i = 0; i < e.results.length; i++) {
+      const r = e.results[i];
+      if (r.isFinal) final += r[0].transcript;
+      else interim += r[0].transcript;
+    }
+    if (interim) setStatus('Слышу: «' + interim.trim() + '»');
+    if (final.trim()) {
+      setStatus('');
+      listening = false; setMic(false);
+      send(final.trim());
+    }
+  };
+
+  rec.onerror = function (e) {
+    listening = false; setMic(false);
+    const map = {
+      'not-allowed': 'Доступ к микрофону запрещён браузером',
+      'network': 'Нет связи с сервером распознавания — проверьте интернет',
+      'audio-capture': 'Микрофон не найден'
+    };
+    if (e.error !== 'aborted' && e.error !== 'no-speech') {
+      showToast(map[e.error] || ('Ошибка: ' + e.error), 'error');
+    }
+  };
+
+  rec.onend = function () {
+    listening = false; setMic(false);
+    if (botSpeaking) return;
+    if (autoMode) { setStatus('Слушаю дальше… (авто-режим)'); scheduleRestart(); }
+    else setStatus('Ожидание. Нажмите 🎤, чтобы сказать ещё.');
+  };
+
+  try { rec.start(); }
+  catch (e) { listening = false; setMic(false); }
+}
+
+function setMic(on) {
+  const b = document.getElementById('mic');
+  b.classList.toggle('listening', on);
+  b.textContent = on ? '🔴' : '🎤';
+}
+
+function toggleAutoMode() {
+  autoMode = document.getElementById('autoListen').checked;
+  if (autoMode) { onMic(); showToast('Авто-режим включён 🎙️'); }
+  else {
+    clearTimeout(restartTimer);
+    if (listening) { try { rec.stop(); } catch (e) {} }
+    setStatus('Авто-режим выключен');
+  }
+}
+
+// ---------- ГОЛОС (мужской) ----------
+let voiceM = null;
+function pickVoice() {
+  const vs = speechSynthesis.getVoices();
+  const ru = vs.filter(v => /ru/i.test(v.lang));
+  if (!ru.length) return;
+  voiceM =
+    ru.find(v => /pavel|pavelTTS|dmitri|dmitry|boris|arnold|male/i.test(v.name)) ||
+    ru.find(v => /мужск/i.test(v.name)) ||
+    ru.find(v => /maxim|максим/i.test(v.name)) ||
+    ru.find(v => /google/i.test(v.name)) ||
+    ru[0];
+}
+if (window.speechSynthesis) {
+  pickVoice();
+  speechSynthesis.onvoiceschanged = pickVoice;
+}
+
+function speak(text) {
+  if (!window.speechSynthesis) return;
+  try {
+    if (listening) { botSpeaking = true; try { rec.stop(); } catch (e) {} }
+    speechSynthesis.cancel();
+    // Коротко и по делу: вырезаем вежливые обороты, оставляем суть
+    let clean = String(text)
+      .replace(/\n/g, '. ')
+      .replace(/(конечно|хорошо|сейчас|секунд[уоч]\s*|минут[уоч]\s*|одну минуту|пожалуйста|понял[а]?)[,!.]?\s*/gi, '')
+      .trim()
+      .slice(0, 200);
+    if (!clean) clean = text.slice(0, 200);
+    const u = new SpeechSynthesisUtterance(clean);
+    u.lang = 'ru-RU';
+    if (voiceM) u.voice = voiceM;
+    u.rate = 1.1;
+    u.pitch = 0.8;   // ниже тон — мужской голос
+    u.volume = 1;
+    const done = () => { botSpeaking = false; if (autoMode && !listening) scheduleRestart(); };
+    u.onend = done; u.onerror = done;
+    speechSynthesis.speak(u);
+  } catch (e) { botSpeaking = false; }
+}
+
+// ---------- ПРИВЕТСТВИЕ (короткое) ----------
+const WELCOME = [
+  'Склад на связи. Говорите: что пришло, что списали, что в резерв.',
+  'Привет! Скажите, например: «пришло манжета Д49 пять штук».',
+  'Слушаю. Можно писать или говорить голосом.'
+];
+document.addEventListener('DOMContentLoaded', () => {
+  addMsg(WELCOME[Math.floor(Math.random() * WELCOME.length)], 'bot');
+});
+</script>
+</body>
 </html>
