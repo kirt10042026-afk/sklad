@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>ТСК — Склад</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -71,10 +72,12 @@ body::after{
   animation:heroGlow 7s ease-in-out infinite alternate;
 }
 @keyframes heroGlow{from{opacity:.75;transform:scale(1)}to{opacity:1;transform:scale(1.18)}}
+/* FIX: убран overflow:hidden (обрезал кольцо), добавлен isolation:isolate
+   (иначе z-index:-1 уводил кольцо под фон плитки) и размер эмодзи-заглушки */
 .logo{
-  width:58px;height:58px;border-radius:50%;flex-shrink:0;overflow:hidden;
+  width:58px;height:58px;border-radius:50%;flex-shrink:0;
   background:#fff; display:flex;align-items:center;justify-content:center;
-  position:relative;
+  position:relative; isolation:isolate; font-size:26px;
 }
 /* вращающееся световое кольцо вокруг логотипа */
 .logo::after{
@@ -450,7 +453,10 @@ function normalize(q) {
   s = s.replace(/(^|[^а-яa-z\d_])([а-яa-z]{1,4})\s+(\d{2,6})(?![\dа-яa-z])/g,
     (m, p1, p2, p3) => /^(плюс|минус|умнож|раздели|подели|на|х)$/.test(p2) ? m : p1 + p2 + p3);
     // Математика: синонимы склада не подставляем, иначе «минус» станет «списал»
-  const isMath = /(?:сколько\s+будет|сколько\s+(?:выйдет|получится|равно)|чему\s+равно|посчита[а-яё]*|вычисл[а-яё]*|реши\b|дважды|трижды|корень|процент|умнож|раздели|подели)/.test(s) ||/\d\s*[+\-*/×]\s*\d/.test(s);
+    // FIX: добавлен разбор арифметики словами между числами («5 минус 3» и т. п.)
+  const isMath = /(?:сколько\s+(?:будет|выйдет|получится|равно)|чему\s+равно|посчита[а-яё]*|вычисл[а-яё]*|реши\b|дважды|трижды|корень|процент|умнож|раздели|подели)/.test(s)
+    || /\d\s*[+\-*/×]\s*\d/.test(s)
+    || /\d\s+(?:минус|плюс|умнож(?:ить)?|раздел(?:ить)?|на)\s+\d/.test(s);
   if (!isMath) {
     for (const { re, to } of SYNONYMS) { if (re.test(s)) { s = s.replace(re, ' ' + to + ' '); break; } }
   }
@@ -743,9 +749,18 @@ function startRecognition() {
       'network': 'Нет связи с сервером распознавания — проверьте интернет',
       'audio-capture': 'Микрофон не найден'
     };
+    if (e.error === 'not-allowed') {
+      // FIX: при запрете микрофона не перезапускаемся вечно, а гасим авто-режим
+      showToast(map[e.error], 'error');
+      if (autoMode) { autoMode = false; renderAuto(); }
+      setStatus('Доступ к микрофону запрещён', false);
+      return;
+    }
     if (e.error !== 'aborted' && e.error !== 'no-speech') {
       showToast(map[e.error] || ('Ошибка: ' + e.error), 'error');
     }
+    // FIX: после устранимого сбоя (сеть и т. п.) авто-режим пробует снова
+    if (autoMode) scheduleRestart();
   };
 
   rec.onend = function () {
@@ -756,7 +771,12 @@ function startRecognition() {
   };
 
   try { rec.start(); }
-  catch (e) { listening = false; setMic(false); }
+  catch (e) {
+    listening = false; setMic(false);
+    // FIX: сбрасываем статус «Слушаю…», если запустить не удалось
+    setDot('off', 'Система', 'Готова слушать');
+    setStatus('', false);
+  }
 }
 
 function setMic(on) {
@@ -820,8 +840,8 @@ async function fetchTts(text) {
 
 function speak(text) {
   try {
-    if (listening) { botSpeaking = true; try { rec.stop(); } catch (e) {} }
-    botSpeaking = true;
+    if (listening) { try { rec.stop(); } catch (e) {} }
+    botSpeaking = true; // FIX: раньше строка дублировалась
 
     let clean = String(text).trim().replace(/\n+/g, '. ');
     if (clean.length > 4500) clean = clean.slice(0, 4500);
