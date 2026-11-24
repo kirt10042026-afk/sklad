@@ -112,7 +112,9 @@ body{font-family:'Inter',sans-serif;background:var(--bg-page);margin:0;padding:1
 <div id="toast-container"><div id="toast" class="toast"></div></div>
 
 <script>
-const API_URL = 'https://script.google.com/macros/s/AKfycbxO014U0nDhQ861Ah2_FYUjuENCciPwWOX0BMq67e-JDhoPY8L2ZULFCDwtoQWT9kzt/exec';
+// Запасной адрес на случай, если страница открыта не из веб-приложения.
+// Основной путь — google.script.run: он не зависит от перевыкладывания скрипта.
+const API_URL = 'https://script.google.com/macros/s/AKfycbxv2Ph_q-OLslceLpPIPdC-ZA4P52iusU283su9revSUKt-QLi2y2-9QgBHhbTrUgga/exec';
 
 let user = { email: '', name: 'Гость', canWrite: false };
 let voiceState = {};
@@ -125,11 +127,16 @@ let restartTimer = null;
 let toastTimer = null;
 let statusTimer = null;
 
-// ---------- ТОСТЫ ----------
+// ---------- ТОСТЫ (без innerHTML — защита от вставки HTML) ----------
 function showToast(message, type) {
   const toast = document.getElementById('toast');
   toast.className = 'toast show' + (type === 'error' ? ' error' : '');
-  toast.innerHTML = '<span style="font-size:18px">' + (type === 'error' ? '❌' : '✅') + '</span><span>' + message + '</span>';
+  toast.textContent = '';
+  const icon = document.createElement('span');
+  icon.textContent = type === 'error' ? '❌' : '✅';
+  const body = document.createElement('span');
+  body.textContent = message;
+  toast.append(icon, body);
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => toast.classList.remove('show'), 3500);
 }
@@ -144,48 +151,82 @@ const NUM_WORDS = {
   'триста':'300','четыреста':'400','пятьсот':'500','шестьсот':'600','семьсот':'700','восемьсот':'800','девятьсот':'900'
 };
 
+// Составные числа считаем так же, как на сервере:
+// единицы складываем, десятки и сотни запоминаем → «сто тридцать два» = 132
+function wordsToDigits(s) {
+  const toks = String(s).split(/\s+/), out = [];
+  let total = 0, cur = 0, inRun = false;
+  const flush = () => {
+    if (inRun) { out.push(String(total + cur)); total = 0; cur = 0; inRun = false; }
+  };
+  for (let i = 0; i < toks.length; i++) {
+    const w = toks[i].replace(/[.,;:!?]+$/g, '');
+    if (NUM_WORDS[w] !== undefined) {
+      const v = parseInt(NUM_WORDS[w], 10);
+      if (v >= 20) { if (inRun) total += cur; cur = v; inRun = true; }
+      else { cur += v; inRun = true; }
+    } else { flush(); out.push(toks[i]); }
+  }
+  flush();
+  return out.join(' ');
+}
+
 // ---------- СИНОНИМЫ (фронт подстраховывает сервер) ----------
+// Важно: в JS \b и \w не работают с кириллицей, поэтому границы слов
+// строим на классах [а-яё], а не на \b/\w
 const SYNONYMS = [
-  { re: /\b(добав(?:ь|ить|ите)\s+(?:нов[а-яё]*\s+)?товар|созда(?:ть|й)\s+товар)\b/i, to: 'добавь товар' },
-  { re: /\b(сним(?:и|ите|ать)|убер(?:и|ите|ь)|отмен(?:и|ить|ите))\s+резерв\w*\b/i, to: 'сними резерв' },
-  { re: /\b(зарезерв\w*|забронир\w*|бронь)\b/i, to: 'резерв' },
-  { re: /\bотгруз(?:ка|ить|им|и)\b/i, to: 'отгрузка' },
-  { re: /\b(прибав\w*|приход\w*|привез\w*|принесли|принял\w*|поступлени\w*|плюс)\b/i, to: 'пришло' },
-  { re: /\b(расход\w*|продали|увез\w*|ушло|минус|убав\w*)\b/i, to: 'списал' },
-  { re: /\b(остатк\w*|сколько\s+остал(?:ось|ся))\b/i, to: 'сколько' }
+  { re: /(добав(?:ить|ь|ите)\s+(?:нов[а-яё]*\s+)?товар|созда(?:ть|й)\s+товар|заведи\s+товар)/i, to: 'добавь товар' },
+  { re: /(сним[а-яё]*\s+резерв[а-яё]*|убер[а-яё]*\s+резерв[а-яё]*|отмен[а-яё]*\s+резерв[а-яё]*)/i, to: 'сними резерв' },
+  { re: /(зарезервир[а-яё]*|забронир[а-яё]*|бронь)/i, to: 'резерв' },
+  { re: /отгруз[а-яё]*/i, to: 'отгрузка' },
+  { re: /(прибав[а-яё]*|приход[а-яё]*|привез[а-яё]*|принесли|поступлени[а-яё]*|плюс)/i, to: 'пришло' },
+  { re: /(расход[а-яё]*|продали|увез[а-яё]*|ушло|минус|убав[а-яё]*)/i, to: 'списал' },
+  { re: /(остатк[а-яё]*|сколько\s+остал[а-яё]*)/i, to: 'сколько' }
 ];
 
-// ---------- НОРМАЛИЗАЦИЯ: тире, точки, числа словами ----------
+// ---------- НОРМАЛИЗАЦИЯ ----------
+// Порядок важен: сначала числа словами → цифры, потом знаки («точка», «тире»),
+// потом склейка «рти 132» → «рти132». Иначе «кран точка сорок три»
+// превращалось в «кран.сорок 3» и код не распознавался.
 function normalize(q) {
-  let s = ' ' + String(q).toLowerCase().replace(/ё/g, 'е') + ' ';
+  let s = String(q).toLowerCase().replace(/ё/g, 'е');
 
-  // Голосовые распознаватели часто диктуют знаки словами — превращаем их обратно
-  s = s.replace(/\s+(?:точка|точки|точку)\s+/g, '.');
-  s = s.replace(/\s+(?:тире|дефис|минус|черточка)\s+/g, '-');
-  s = s.replace(/\s+запята[яию]\s+/g, ',');
-  s = s.replace(/\s+слэш\s+/g, '/');
+  s = wordsToDigits(s);
 
-  // «эр тэ и сто тридцать два» → «рти132»: склеиваем буквы кода и числа
-  s = s.replace(/\b([а-яa-z]{1,4})\s+(\d{2,6})\b/g, '$1$2');
+  s = (' ' + s + ' ')
+    .replace(/\s+(?:точка|точки|точку)\s+/g, '.')
+    .replace(/\s+(?:тире|дефис|черточка)\s+/g, '-')
+    .replace(/\s+запята[яию]\s+/g, ',')
+    .replace(/\s+слэш\s+/g, '/')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
 
-  // Числа словами → цифры: «сто тридцать два» → «132»
-  let prev;
-  do {
-    prev = s;
-    s = s.replace(/\b(сто|двести|триста|четыреста|пятьсот|шестьсот|семьсот|восемьсот|девятьсот|двадцать|тридцать|сорок|пятьдесят|шестьдесят|семьдесят|восемьдесят|девяносто|ноль|один|одна|одно|два|две|три|четыре|пять|шесть|семь|восемь|девять|десять|одиннадцать|двенадцать|тринадцать|четырнадцать|пятнадцать|шестнадцать|семнадцать|восемнадцать|девятнадцать)\b\s+(?=(?:сто|двести|триста|четыреста|пятьсот|шестьсот|семьсот|восемьсот|девятьсот|двадцать|тридцать|сорок|пятьдесят|шестьдесят|семьдесят|восемьдесят|девяносто|ноль|один|одна|одно|два|две|три|четыре|пять|шесть|семь|восемь|девять|десять|одиннадцать|двенадцать|тринадцать|четырнадцать|пятнадцать|шестнадцать|семнадцать|восемнадцать|девятнадцать)\b)/g, '');
-    s = s.replace(/\b(?:сто|двести|триста|четыреста|пятьсот|шестьсот|семьсот|восемьсот|девятьсот)\b/g, m => NUM_WORDS[m]);
-    s = s.replace(/\b(?:двадцать|тридцать|сорок|пятьдесят|шестьдесят|семьдесят|восемьдесят|девяносто)\b/g, m => NUM_WORDS[m]);
-    s = s.replace(/\b(?:ноль|один|одна|одно|два|две|три|четыре|пять|шесть|семь|восемь|девять|десять|одиннадцать|двенадцать|тринадцать|четырнадцать|пятнадцать|шестнадцать|семнадцать|восемнадцать|девятнадцать)\b/g, m => NUM_WORDS[m]);
-    // Склейка рядом стоящих цифр из составного числа: «100 32» → «10032» (только когда между ними нет предлогов)
-    s = s.replace(/\b(\d)\s+(\d)\b(?![^а-я]*(?:штук|шт|короб|упаков))/g, '$1$2');
-  } while (s !== prev);
+  // «рти 132» → «рти132»: без \b, который не работает с кириллицей
+  s = s.replace(/(^|[^а-яa-z\d_])([а-яa-z]{1,4})\s+(\d{2,6})(?![\dа-яa-z])/g, '$1$2$3');
 
   for (const { re, to } of SYNONYMS) { if (re.test(s)) { s = s.replace(re, ' ' + to + ' '); break; } }
-  return s.replace(/\s+/g, ' ').trim();
+  return s.replace(/\s{2,}/g, ' ').trim();
 }
 
 // ---------- СЕРВЕР ----------
+// Основной путь — google.script.run (страница открыта из Apps Script):
+// без CORS, без хардкода URL и без JSON в строке запроса.
+// Если страница открыта отдельно — запасной fetch на API_URL.
 async function api(params) {
+  if (window.google && google.script && google.script.run) {
+    if (params.action === 'login') {
+      return new Promise((resolve, reject) =>
+        google.script.run.withSuccessHandler(resolve).withFailureHandler(reject).apiLogin(params.email || ''));
+    }
+    if (params.action === 'voice') {
+      let st = params.state;
+      if (typeof st === 'string') { try { st = JSON.parse(st || '{}'); } catch (e) { st = {}; } }
+      return new Promise((resolve, reject) =>
+        google.script.run.withSuccessHandler(resolve).withFailureHandler(reject)
+          .apiVoice({ query: params.query || '', state: st || {}, email: params.email || '' }));
+    }
+    throw new Error('Неизвестное действие: ' + params.action);
+  }
   const url = new URL(API_URL);
   for (const k in params) {
     const v = params[k];
@@ -247,6 +288,12 @@ async function doLogin() {
   const t = addTyping();
   try {
     const acc = await api({ action: 'login', email: email });
+    t.remove();
+    // Сервер может ответить ok:false (например, почта без @) — тогда не входим
+    if (acc && acc.ok === false) {
+      showToast(acc.message || 'Не получилось войти', 'error');
+      return;
+    }
     user = acc;
     document.getElementById('emp-name').textContent = acc.name || 'Гость';
     document.getElementById('emp-role').textContent = acc.canWrite ? (acc.role || 'полный доступ') : 'только остатки';
@@ -256,7 +303,6 @@ async function doLogin() {
     document.getElementById('accessBadgeWrap').style.display = 'block';
     document.getElementById('profileHeader').style.display = 'flex';
     document.getElementById('loginBox').style.display = 'none';
-    t.remove();
     addMsg(acc.message, 'bot');
     speak(acc.message);
     showToast(acc.canWrite ? 'Полный доступ' : 'Только остатки');
@@ -269,7 +315,7 @@ async function doLogin() {
 // ---------- МИКРОФОН ----------
 function setStatus(text) {
   const s = document.getElementById('mic-status');
-  s.textContent = text;
+  s.textContent = text || ''; // раньше '' не очищал строку
   clearTimeout(statusTimer);
   if (text) statusTimer = setTimeout(() => { s.textContent = ''; }, 6000);
 }
@@ -395,9 +441,13 @@ function speak(text) {
     let clean = String(text)
       .replace(/\n/g, '. ')
       .replace(/(конечно|хорошо|сейчас|секунд[уоч]\s*|минут[уоч]\s*|одну минуту|пожалуйста|понял[а]?)[,!.]?\s*/gi, '')
-      .trim()
-      .slice(0, 200);
-    if (!clean) clean = text.slice(0, 200);
+      .trim();
+    // Обрезаем по границе слова, а не посередине
+    if (clean.length > 200) {
+      const cut = clean.lastIndexOf(' ', 200);
+      clean = clean.slice(0, cut > 0 ? cut : 200) + '…';
+    }
+    if (!clean) clean = String(text).slice(0, 200);
     const u = new SpeechSynthesisUtterance(clean);
     u.lang = 'ru-RU';
     if (voiceM) u.voice = voiceM;
