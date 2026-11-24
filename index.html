@@ -214,7 +214,7 @@ body{
 <script>
 // Запасной адрес на случай, если страница открыта не из веб-приложения.
 // Основной путь — google.script.run: он не зависит от перевыкладывания скрипта.
-const API_URL = 'https://script.google.com/macros/s/AKfycbwJ55KuieNOpyC7_0vp3j1fjA3yjs3ZXYARFYZ-7t5TmA2csqXghR4bMZ9oyZyy5aai/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbw6izYR6zrbgxRy4OEU5wF_DnvE5RDbAHkMX7mP6rZAhkbWSrUaJc8mKD7Hydc-XFfU/exec';
 
 let user = { email: '', name: 'Гость', canWrite: false };
 let voiceState = {};
@@ -226,7 +226,6 @@ let micGranted = false;
 let restartTimer = null;
 let toastTimer = null;
 let statusTimer = null;
-let speakQueue = [];   // очередь фраз для естественной речи
 
 // ---------- ТОСТЫ ----------
 function showToast(message, type) {
@@ -511,105 +510,75 @@ function toggleAutoMode() {
   }
 }
 
-// ================= ГОЛОС: ЖИВАЯ РЕЧЬ =================
-// Секрет против «робота»: текст режем на предложения и каждую фразу
-// произносим отдельно, со своим темпом, тоном и микропаузой —
-// как человек, который говорит осмысленными кусочками.
+// ============ ГОЛОС: SpeechKit + встроенный запасной TTS ============
+// Основной путь: сервер запрашивает аудио у SpeechKit и отдаёт в base64.
+// Если ключа нет или SpeechKit недоступен — включается браузерный голос.
 
-let voiceM = null;
-let voiceReady = false;
+let currentAudio = null;
 
-function pickVoice() {
-  const vs = speechSynthesis.getVoices();
-  const ru = vs.filter(v => /ru/i.test(v.lang));
-  if (!ru.length) return;
-  // Приоритет: естественные нейро-голоса → мужские → Google → любой русский
-  voiceM =
-    ru.find(v => /natural|neural|premium|enhanced/i.test(v.name)) ||
-    ru.find(v => /pavel|dmitri|dmitry|alexander|александр|дмитрий/i.test(v.name)) ||
-    ru.find(v => /google/i.test(v.name)) ||
-    ru.find(v => /male|мужск/i.test(v.name)) ||
-    ru[0];
-  voiceReady = true;
-}
-if (window.speechSynthesis) {
-  pickVoice();
-  speechSynthesis.onvoiceschanged = pickVoice;
-  // Некоторые браузеры отдают голоса с задержкой — пробуем ещё пару раз
-  setTimeout(pickVoice, 300);
-  setTimeout(pickVoice, 1200);
+function afterSpeak() {
+  botSpeaking = false;
+  if (autoMode && !listening) scheduleRestart();
 }
 
-// Готовим текст к озвучке: цифры и коды — в понятный для TTS вид
-function prepareForSpeech(text) {
-  return String(text)
-    .replace(/\n+/g, '. ')
-    .replace(/\s{2,}/g, ' ')
-    .trim();
-}
-
-// Режем на фразы: по знакам препинания и длине
-function splitPhrases(text) {
-  const parts = String(text)
-    .split(/(?<=[.!?…:;])\s+|(?<=,)\s+/)
-    .map(s => s.trim())
-    .filter(Boolean);
-  // Очень длинные куски без знаков делим принудительно
-  const out = [];
-  for (let p of parts) {
-    while (p.length > 140) {
-      const cut = p.lastIndexOf(' ', 140);
-      out.push(p.slice(0, cut > 0 ? cut : 140).trim());
-      p = p.slice(cut > 0 ? cut : 140).trim();
-    }
-    if (p) out.push(p);
-  }
-  return out.length ? out : [String(text)];
-}
-
-function speakNext() {
-  if (!speakQueue.length) {
-    botSpeaking = false;
-    if (autoMode && !listening) scheduleRestart();
-    return;
-  }
-  const item = speakQueue.shift();
-  const u = new SpeechSynthesisUtterance(item.text);
-  u.lang = 'ru-RU';
-  if (voiceM) u.voice = voiceM;
-  // Живая интонация: каждая фраза чуть отличается темпом и тоном.
-  // Вопросы — с подъёмом тона, длинные фразы — чуть медленнее.
-  const isQuestion = /\?\s*$/.test(item.text);
-  u.rate  = Math.max(0.9, Math.min(1.15, 1.0 + (Math.random() - 0.5) * 0.1 + (item.text.length > 80 ? -0.05 : 0)));
-  u.pitch = isQuestion ? 1.05 + Math.random() * 0.05 : 0.85 + Math.random() * 0.08;
-  u.volume = 1;
-  u.onend = speakNext;
-  u.onerror = speakNext;
-  speechSynthesis.speak(u);
-}
-
-function speak(text) {
-  if (!window.speechSynthesis) return;
+// Запасной движок — встроенный браузерный голос
+function speakFallback(text) {
+  if (!window.speechSynthesis) { afterSpeak(); return; }
   try {
-    if (listening) { botSpeaking = true; try { rec.stop(); } catch (e) {} }
     speechSynthesis.cancel();
-    speakQueue = [];
-    botSpeaking = true;
-
-    let clean = prepareForSpeech(text);
+    let clean = String(text).replace(/\n+/g, '. ').trim();
     if (clean.length > 300) {
       const cut = clean.lastIndexOf(' ', 300);
       clean = clean.slice(0, cut > 0 ? cut : 300) + '…';
     }
-    if (!clean) return;
+    const u = new SpeechSynthesisUtterance(clean);
+    u.lang = 'ru-RU';
+    u.rate = 1.02; u.pitch = 0.85;
+    u.onend = afterSpeak; u.onerror = afterSpeak;
+    speechSynthesis.speak(u);
+  } catch (e) { afterSpeak(); }
+}
 
-    const phrases = splitPhrases(clean);
-    speakQueue = phrases.map(t => ({ text: t }));
-    // Запускаем сразу: speakNext сам выстроит очередь с onend
-    speechSynthesis.speak(new SpeechSynthesisUtterance('')); // «прокачка» очереди в Chrome
-    speechSynthesis.cancel();
-    speakNext();
-  } catch (e) { botSpeaking = false; }
+// Для страницы, открытой вне Apps Script, — прямой запрос на API_URL
+async function fetchTts(text) {
+  const url = new URL(API_URL);
+  url.searchParams.set('action', 'tts');
+  url.searchParams.set('text', text);
+  const res = await fetch(url.toString());
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  return res.json();
+}
+
+function speak(text) {
+  try {
+    if (listening) { botSpeaking = true; try { rec.stop(); } catch (e) {} }
+    botSpeaking = true;
+
+    let clean = String(text).trim().replace(/\n+/g, '. ');
+    if (clean.length > 4500) clean = clean.slice(0, 4500);
+    if (!clean) { afterSpeak(); return; }
+
+    const cb = (typeof google !== 'undefined' && google.script && google.script.run)
+      ? fn => google.script.run.withSuccessHandler(fn).withFailureHandler(() => speakFallback(clean)).apiTts(clean)
+      : fn => fetchTts(clean).then(fn).catch(() => speakFallback(clean));
+
+    cb(res => {
+      if (!res || !res.ok) { speakFallback(clean); return; }
+      try {
+        // base64 → байты → аудио
+        const raw = atob(res.audio);
+        const arr = new Uint8Array(raw.length);
+        for (let i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i);
+        const url = URL.createObjectURL(new Blob([arr], { type: res.mime || 'audio/mpeg' }));
+        if (currentAudio) { currentAudio.pause(); URL.revokeObjectURL(currentAudio.src); }
+        const a = new Audio(url);
+        currentAudio = a;
+        a.onended = () => { URL.revokeObjectURL(url); afterSpeak(); };
+        a.onerror = () => { URL.revokeObjectURL(url); afterSpeak(); };
+        a.play().catch(() => speakFallback(clean));
+      } catch (e) { speakFallback(clean); }
+    });
+  } catch (e) { afterSpeak(); }
 }
 
 // ---------- ПРИВЕТСТВИЕ ----------
