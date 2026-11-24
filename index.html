@@ -13,16 +13,8 @@
   --text:#111827; --muted:#6b7280; --border:rgba(17,24,39,.08);
   --accent:#5B3A29; --accent-dark:#3e2723; --accent-soft:rgba(91,58,41,.10);
   --user-bub:linear-gradient(135deg,#5B3A29,#3e2723); --user-text:#fff;
-  --green:#10b981; --red:#ef4444; --shadow:0 8px 28px rgba(17,24,39,.10);
-  --shadow-sm:0 2px 10px rgba(17,24,39,.06); --r-lg:22px; --r-md:14px; --r-sm:10px;
-}
-html[data-theme="dark"]{
-  --bg:#17171a; --bg-grad1:rgba(255,255,255,.05); --bg-grad2:rgba(91,58,41,.12);
-  --card:rgba(40,40,45,.72); --card-solid:#26262b; --chat-bg:rgba(40,40,45,.55);
-  --text:#f3f4f6; --muted:#9ca3af; --border:rgba(255,255,255,.10);
-  --accent-soft:rgba(245,222,179,.12);
-  --user-bub:linear-gradient(135deg,#8a6a52,#6b4a35); --user-text:#fff;
-  --shadow:0 8px 28px rgba(0,0,0,.45); --shadow-sm:0 2px 10px rgba(0,0,0,.35);
+  --green:#10b981; --shadow:0 8px 28px rgba(17,24,39,.10);
+  --shadow-sm:0 2px 10px rgba(17,24,39,.06); --r-lg:22px; --r-md:14px;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{
@@ -40,7 +32,7 @@ body{
 .b-card{
   background:var(--card); backdrop-filter:blur(18px) saturate(160%); -webkit-backdrop-filter:blur(18px) saturate(160%);
   border:1px solid var(--border); border-radius:var(--r-lg); padding:18px;
-  box-shadow:var(--shadow); transition:transform .25s cubic-bezier(.25,1,.5,1), box-shadow .25s;
+  box-shadow:var(--shadow); transition:transform .25s cubic-bezier(.25,1,.5,1);
   animation:cardIn .5s cubic-bezier(.25,1,.5,1) backwards;
 }
 .b-card:nth-child(1){animation-delay:.02s}.b-card:nth-child(2){animation-delay:.08s}
@@ -67,12 +59,7 @@ body{
 }
 .header h1{margin:0;font-size:20px;font-weight:800;letter-spacing:-.3px}
 .header .sub{color:rgba(255,255,255,.8);font-size:13px;margin-top:3px}
-.theme-btn{
-  margin-left:auto;width:42px;height:42px;border-radius:14px;border:1px solid rgba(255,255,255,.25);
-  background:rgba(255,255,255,.15);color:#fff;font-size:19px;cursor:pointer;
-  transition:.25s;flex-shrink:0;display:flex;align-items:center;justify-content:center;
-}
-.theme-btn:hover{background:rgba(255,255,255,.3);transform:rotate(15deg)}
+.header .mic-hint{margin-left:auto;font-size:12px;color:rgba(255,255,255,.85);background:rgba(255,255,255,.14);padding:6px 12px;border-radius:20px;white-space:nowrap}
 
 /* ---------- профиль ---------- */
 .b-card.profile{display:flex;flex-direction:column;gap:12px;min-height:118px}
@@ -87,8 +74,6 @@ body{
 .badge{display:inline-block;padding:5px 12px;border-radius:20px;font-size:11px;font-weight:700;width:fit-content;transition:.3s}
 .badge.guest{background:rgba(239,68,68,.12);color:#b91c1c}
 .badge.staff{background:rgba(16,185,129,.14);color:#047857}
-html[data-theme="dark"] .badge.guest{background:rgba(239,68,68,.2);color:#f87171}
-html[data-theme="dark"] .badge.staff{background:rgba(16,185,129,.2);color:#34d399}
 #loginBox{display:flex;gap:8px}
 #loginBox input{
   flex:1;min-width:0;padding:11px 13px;border:1px solid var(--border);border-radius:var(--r-md);
@@ -121,7 +106,6 @@ html[data-theme="dark"] .badge.staff{background:rgba(16,185,129,.2);color:#34d39
 .msg.bot{background:var(--card-solid);border:1px solid var(--border);align-self:flex-start;border-bottom-left-radius:6px}
 .msg.user{background:var(--user-bub);color:var(--user-text);align-self:flex-end;border-bottom-right-radius:6px}
 .msg .who{font-size:11px;color:var(--accent);font-weight:700;margin-bottom:3px}
-html[data-theme="dark"] .msg .who{color:#d4b896}
 .msg .time{font-size:10px;color:var(--muted);margin-top:4px;text-align:right}
 .msg.typing{color:var(--muted);font-style:italic;background:var(--card-solid);border:1px dashed var(--border);display:flex;gap:4px;align-items:center;padding:14px 18px}
 .msg.typing .dot{width:6px;height:6px;border-radius:50%;background:var(--muted);animation:dotJump 1.2s infinite}
@@ -135,7 +119,6 @@ html[data-theme="dark"] .msg .who{color:#d4b896}
 .switch{position:relative;display:inline-block;width:44px;height:24px;flex-shrink:0}
 .switch input{opacity:0;width:0;height:0}
 .slider{position:absolute;cursor:pointer;inset:0;background:#d1d5db;border-radius:24px;transition:.3s}
-html[data-theme="dark"] .slider{background:#3f3f46}
 .slider::before{content:"";position:absolute;width:18px;height:18px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.3s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
 .switch input:checked+.slider{background:var(--green)}
 .switch input:checked+.slider::before{transform:translateX(20px)}
@@ -187,7 +170,7 @@ html[data-theme="dark"] .slider{background:#3f3f46}
       <h1>Склад</h1>
       <div class="sub">ЖД запчасти — голосом и текстом</div>
     </div>
-    <button class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="Тема">🌙</button>
+    <div class="mic-hint">🔊 «Склад, …»</div>
   </div>
 
   <div class="b-card profile">
@@ -243,21 +226,7 @@ let micGranted = false;
 let restartTimer = null;
 let toastTimer = null;
 let statusTimer = null;
-
-// ---------- ТЕМА ----------
-function applyTheme(t) {
-  document.documentElement.setAttribute('data-theme', t);
-  document.getElementById('themeBtn').textContent = t === 'dark' ? '☀️' : '🌙';
-  try { localStorage.setItem('sklad-theme', t); } catch (e) {}
-}
-function toggleTheme() {
-  applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
-}
-(function initTheme() {
-  let t = 'light';
-  try { t = localStorage.getItem('sklad-theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'); } catch (e) {}
-  applyTheme(t);
-})();
+let speakQueue = [];   // очередь фраз для естественной речи
 
 // ---------- ТОСТЫ ----------
 function showToast(message, type) {
@@ -329,7 +298,7 @@ function normalize(q) {
 
 // ---------- СЕРВЕР ----------
 async function api(params) {
-  if (window.google && google.script && google.script.run) {
+  if (window.google && google.script.run) {
     if (params.action === 'login') {
       return new Promise((resolve, reject) =>
         google.script.run.withSuccessHandler(resolve).withFailureHandler(reject).apiLogin(params.email || ''));
@@ -542,22 +511,81 @@ function toggleAutoMode() {
   }
 }
 
-// ---------- ГОЛОС (мужской) ----------
+// ================= ГОЛОС: ЖИВАЯ РЕЧЬ =================
+// Секрет против «робота»: текст режем на предложения и каждую фразу
+// произносим отдельно, со своим темпом, тоном и микропаузой —
+// как человек, который говорит осмысленными кусочками.
+
 let voiceM = null;
+let voiceReady = false;
+
 function pickVoice() {
   const vs = speechSynthesis.getVoices();
   const ru = vs.filter(v => /ru/i.test(v.lang));
   if (!ru.length) return;
+  // Приоритет: естественные нейро-голоса → мужские → Google → любой русский
   voiceM =
-    ru.find(v => /pavel|dmitri|dmitry|boris|arnold|male/i.test(v.name)) ||
-    ru.find(v => /мужск/i.test(v.name)) ||
-    ru.find(v => /maxim|максим/i.test(v.name)) ||
+    ru.find(v => /natural|neural|premium|enhanced/i.test(v.name)) ||
+    ru.find(v => /pavel|dmitri|dmitry|alexander|александр|дмитрий/i.test(v.name)) ||
     ru.find(v => /google/i.test(v.name)) ||
+    ru.find(v => /male|мужск/i.test(v.name)) ||
     ru[0];
+  voiceReady = true;
 }
 if (window.speechSynthesis) {
   pickVoice();
   speechSynthesis.onvoiceschanged = pickVoice;
+  // Некоторые браузеры отдают голоса с задержкой — пробуем ещё пару раз
+  setTimeout(pickVoice, 300);
+  setTimeout(pickVoice, 1200);
+}
+
+// Готовим текст к озвучке: цифры и коды — в понятный для TTS вид
+function prepareForSpeech(text) {
+  return String(text)
+    .replace(/\n+/g, '. ')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+}
+
+// Режем на фразы: по знакам препинания и длине
+function splitPhrases(text) {
+  const parts = String(text)
+    .split(/(?<=[.!?…:;])\s+|(?<=,)\s+/)
+    .map(s => s.trim())
+    .filter(Boolean);
+  // Очень длинные куски без знаков делим принудительно
+  const out = [];
+  for (let p of parts) {
+    while (p.length > 140) {
+      const cut = p.lastIndexOf(' ', 140);
+      out.push(p.slice(0, cut > 0 ? cut : 140).trim());
+      p = p.slice(cut > 0 ? cut : 140).trim();
+    }
+    if (p) out.push(p);
+  }
+  return out.length ? out : [String(text)];
+}
+
+function speakNext() {
+  if (!speakQueue.length) {
+    botSpeaking = false;
+    if (autoMode && !listening) scheduleRestart();
+    return;
+  }
+  const item = speakQueue.shift();
+  const u = new SpeechSynthesisUtterance(item.text);
+  u.lang = 'ru-RU';
+  if (voiceM) u.voice = voiceM;
+  // Живая интонация: каждая фраза чуть отличается темпом и тоном.
+  // Вопросы — с подъёмом тона, длинные фразы — чуть медленнее.
+  const isQuestion = /\?\s*$/.test(item.text);
+  u.rate  = Math.max(0.9, Math.min(1.15, 1.0 + (Math.random() - 0.5) * 0.1 + (item.text.length > 80 ? -0.05 : 0)));
+  u.pitch = isQuestion ? 1.05 + Math.random() * 0.05 : 0.85 + Math.random() * 0.08;
+  u.volume = 1;
+  u.onend = speakNext;
+  u.onerror = speakNext;
+  speechSynthesis.speak(u);
 }
 
 function speak(text) {
@@ -565,21 +593,22 @@ function speak(text) {
   try {
     if (listening) { botSpeaking = true; try { rec.stop(); } catch (e) {} }
     speechSynthesis.cancel();
-    let clean = String(text).replace(/\n/g, '. ');
-    if (clean.length > 200) {
-      const cut = clean.lastIndexOf(' ', 200);
-      clean = clean.slice(0, cut > 0 ? cut : 200) + '…';
+    speakQueue = [];
+    botSpeaking = true;
+
+    let clean = prepareForSpeech(text);
+    if (clean.length > 300) {
+      const cut = clean.lastIndexOf(' ', 300);
+      clean = clean.slice(0, cut > 0 ? cut : 300) + '…';
     }
-    if (!clean) clean = String(text).slice(0, 200);
-    const u = new SpeechSynthesisUtterance(clean);
-    u.lang = 'ru-RU';
-    if (voiceM) u.voice = voiceM;
-    u.rate = 1.02 + Math.random() * 0.12;
-    u.pitch = 0.8;
-    u.volume = 1;
-    const done = () => { botSpeaking = false; if (autoMode && !listening) scheduleRestart(); };
-    u.onend = done; u.onerror = done;
-    speechSynthesis.speak(u);
+    if (!clean) return;
+
+    const phrases = splitPhrases(clean);
+    speakQueue = phrases.map(t => ({ text: t }));
+    // Запускаем сразу: speakNext сам выстроит очередь с onend
+    speechSynthesis.speak(new SpeechSynthesisUtterance('')); // «прокачка» очереди в Chrome
+    speechSynthesis.cancel();
+    speakNext();
   } catch (e) { botSpeaking = false; }
 }
 
